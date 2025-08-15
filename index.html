@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>SandQiAmi Console</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            background: linear-gradient(-45deg, #111827, #1f2937, #374151, #111827);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            transition: background-color 0.4s ease;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        #main-container, #layout-wrapper {
+            transition: all 0.4s ease-in-out;
+        }
+
+        .glass-panel {
+            background: rgba(31, 41, 55, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+        }
+
+        body.light-theme {
+            background: linear-gradient(-45deg, #e5e7eb, #f3f4f6, #d1d5db, #e5e7eb);
+            background-size: 400% 400%;
+            animation: gradientBG 20s ease infinite;
+        }
+        body.light-theme #main-container { background-color: rgba(255, 255, 255, 0.7); border-color: #d1d5db; box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.1); }
+        body.light-theme .glass-panel { background: rgba(255, 255, 255, 0.6); border: 1px solid rgba(0, 0, 0, 0.05); }
+        body.light-theme #main-title { color: #1e40af; }
+        body.light-theme .text-gray-100 { color: #1f2937; }
+        body.light-theme .text-gray-300 { color: #374151; }
+        body.light-theme .top-bar-btn { background-color: rgba(229, 231, 235, 0.8); }
+        body.light-theme .active-command { border-color: #2563eb !important; box-shadow: 0 0 15px rgba(59, 130, 246, 0.7); }
+        body.light-theme #robot-status { color: #1f2937; border-color: #9ca3af; }
+
+        .industrial-btn {
+            border-width: 1px;
+            transition: all 0.2s ease-in-out;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+        }
+        .industrial-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.3);
+            filter: brightness(1.1);
+        }
+        .industrial-btn:active, .active-command {
+            transform: translateY(0) !important;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.6) !important;
+            border-color: #3b82f6 !important;
+        }
+        
+        audio { width: 100%; max-width: 400px; margin: 0 auto; }
+
+        .mode-selector { background: rgba(0,0,0,0.2); border-radius: 0.75rem; padding: 0.25rem; }
+        .mode-btn {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 0.6rem;
+            background-color: transparent;
+            color: #9ca3af;
+        }
+        .mode-btn.mode-active {
+            background-color: #374151;
+            color: white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        
+        /* NEW: Animation for blocked actions */
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        .shake {
+            animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+            transform: translate3d(0, 0, 0);
+        }
+    </style>
+</head>
+<body class="text-gray-100 min-h-screen flex items-center justify-center p-2 sm:p-4">
+
+    <div id="main-container" class="p-4 sm:p-6 rounded-2xl w-full space-y-6 border border-gray-700/50 shadow-2xl max-w-5xl">
+        <header class="flex justify-between items-center w-full">
+            <h1 id="main-title" class="text-2xl sm:text-3xl font-bold text-[var(--accent-color)] drop-shadow-lg flex items-center gap-3">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="w-8 h-8"><path d="M12.378 1.602a.75.75 0 0 0-.756 0L3 7.232V18a2.25 2.25 0 0 0 2.25 2.25h13.5A2.25 2.25 0 0 0 21 18V7.232l-8.622-5.63ZM12 7.5a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5a.75.75 0 0 1 .75-.75ZM10.5 12a.75.75 0 0 0-1.5 0v1.5a.75.75 0 0 0 1.5 0v-1.5Zm3 0a.75.75 0 0 0-1.5 0v1.5a.75.75 0 0 0 1.5 0v-1.5Z"></path></svg>
+                SandQiAmi Console
+            </h1>
+            <div class="flex items-center gap-2">
+                <button id="layout-toggle" title="Toggle Layout (L)" class="top-bar-btn p-2 rounded-full bg-gray-900/50 hover:bg-gray-700/70 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    <svg id="view-side-icon" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6h9.75M10.5 6a1.5 1.5 0 11-3 0m3 0a1.5 1.5 0 10-3 0M3.75 6H7.5m3 12h9.75m-9.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-3.75 0H7.5m9-6h3.75m-3.75 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m-9.75 0h9.75" /></svg>
+                    <svg id="view-stacked-icon" class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="display: none;"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" /></svg>
+                </button>
+                <button id="theme-toggle" title="Toggle Theme (T)" class="top-bar-btn p-2 rounded-full bg-gray-900/50 hover:bg-gray-700/70 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all">
+                    <svg id="moon-icon" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M21.73 15.31a8.001 8.001 0 01-10.42-10.42.75.75 0 00-.879-.473A7.998 7.001 0 003 12c0 4.418 3.582 8 8 8a8.001 8.001 0 0010.73-8.69.75.75 0 00-.001-.999z"></path></svg>
+                    <svg id="sun-icon" class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24" style="display: none;"><path fill-rule="evenodd" d="M12 2.25c.414 0 .75.336.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0112 2.25zM7.5 12a4.5 4.5 0 119 0 4.5 4.5 0 01-9 0zM18.894 6.106a.75.75 0 010 1.06l-1.06 1.06a.75.75 0 01-1.06-1.06l1.06-1.06a.75.75 0 011.06 0zM6.106 18.894a.75.75 0 011.06 0l1.06-1.06a.75.75 0 011.06 1.06l-1.06 1.06a.75.75 0 01-1.06 0zM18.894 17.834a.75.75 0 01-1.06 0l-1.06-1.06a.75.75 0 011.06-1.06l1.06 1.06a.75.75 0 010 1.06zM6.106 7.166a.75.75 0 010-1.06l1.06-1.06a.75.75 0 011.06 1.06L7.166 7.166a.75.75 0 01-1.06 0zM21.75 12a.75.75 0 01-.75.75h-1.5a.75.75 0 010-1.5h1.5a.75.75 0 01.75.75zM4.5 12a.75.75 0 01-.75.75H2.25a.75.75 0 010-1.5H3.75a.75.75 0 01.75.75zM12 17.25a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5a.75.75 0 01.75-.75z" clip-rule="evenodd"></path></svg>
+                </button>
+            </div>
+        </header>
+
+        <div id="layout-wrapper" class="w-full">
+            <div id="media-column" class="space-y-6 w-full">
+                <div class="relative w-full aspect-video bg-black/50 rounded-lg overflow-hidden border border-white/10">
+                    <img id="video-feed" src="http://172.17.124.185:8080/video" class="w-full h-full object-contain" alt="Live Video Feed" onerror="this.onerror=null;this.src='https://placehold.co/1280x720/1f2937/9ca3af?text=Video+Feed+Unavailable';">
+                    <div id="robot-status" class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/70 px-4 py-1.5 rounded-md text-sm font-mono text-white border border-gray-500 transition-all shadow-lg">
+                        Ready
+                    </div>
+                    <button id="btn-picture" title="Take Picture (P)" class="absolute bottom-2 right-2 p-3 rounded-full bg-blue-600 text-white shadow-lg hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 transition-colors">
+                        <span class="text-xl">📸</span>
+                    </button>
+                </div>
+                 <div id="audio-control" class="glass-panel p-4">
+                    <div class="max-w-xs mx-auto">
+                        <h4 class="text-center text-sm font-semibold text-gray-400 mb-2">CONTROL MODE</h4>
+                        <div class="mode-selector grid grid-cols-2 gap-1">
+                            <button id="btn-mode-manual" class="mode-btn py-2 font-semibold">Manual</button>
+                            <button id="btn-mode-semi-auto" class="mode-btn py-2 font-semibold">Semi-Auto</button>
+                        </div>
+                    </div>
+
+                    <h3 class="text-lg font-semibold text-gray-300 mb-2 flex items-center justify-center gap-2">
+                        <svg class="w-6 h-6 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18.75 12a.75.75 0 0 0-.75.75v2.25a3 3 0 0 1-3 3h-1.5a.75.75 0 0 0 0 1.5h1.5a4.5 4.5 0 0 0 4.5-4.5v-2.25a.75.75 0 0 0-.75-.75ZM12 18.75a.75.75 0 0 0 .75-.75v-1.5a3 3 0 0 1 3-3h2.25a.75.75 0 0 0 0-1.5H15a4.5 4.5 0 0 0-4.5 4.5v1.5a.75.75 0 0 0 .75.75ZM12 5.25a.75.75 0 0 0-.75.75v1.5a3 3 0 0 1-3 3H6.75a.75.75 0 0 0 0 1.5h2.25a4.5 4.5 0 0 0 4.5-4.5v-1.5a.75.75 0 0 0-.75-.75ZM5.25 12a.75.75 0 0 0-.75.75v2.25a4.5 4.5 0 0 0 4.5 4.5h1.5a.75.75 0 0 0 0-1.5H9a3 3 0 0 1-3-3v-2.25a.75.75 0 0 0-.75-.75Z" /></svg>
+                        Live Audio
+                    </h3>
+                    <audio id="audio-player" controls autoplay src="http://172.17.124.185:8080/audio.opus"></audio>
+                </div>
+            </div>
+
+            <div id="controls-column" class="space-y-6 w-full">
+                <div class="glass-panel p-4 space-y-4">
+                    <div class="grid grid-cols-3 gap-4 max-w-xs mx-auto">
+                        <div class="col-start-2">
+                            <button id="btn-forward" data-command="forward" class="movement-btn industrial-btn w-full h-16 bg-blue-600 text-white font-bold rounded-lg border-blue-400 text-2xl">▲</button>
+                        </div> <br>
+                        <button id="btn-left" data-command="left" class="movement-btn industrial-btn w-full h-16 bg-gray-600 text-gray-100 font-bold rounded-lg border-gray-400 text-2xl">◀</button>
+                        <button id="btn-stop" data-command="stop" class="industrial-btn w-full h-16 bg-red-600 text-white font-bold rounded-lg border-red-400 text-2xl">🛑</button>
+                        <button id="btn-right" data-command="right" class="movement-btn industrial-btn w-full h-16 bg-gray-600 text-gray-100 font-bold rounded-lg border-gray-400 text-2xl">▶</button>
+                        <div class="col-start-2">
+                            <button id="btn-backward" data-command="backward" class="movement-btn industrial-btn w-full h-16 bg-blue-600 text-white font-bold rounded-lg border-blue-400 text-2xl">▼</button>
+                        </div>
+                    </div>
+                     <div class="grid grid-cols-2 gap-4 max-w-xs mx-auto">
+                        <button id="btn-speedup" class="industrial-btn w-full h-16 bg-teal-600 text-white font-bold rounded-lg border-teal-400">Speed Up (E) ⬆</button>
+                        <button id="btn-slowdown" class="industrial-btn w-full h-16 bg-orange-600 text-white font-bold rounded-lg border-orange-400">Slow Down (Q) ⬇</button>
+                    </div>
+                </div>
+
+                <div class="glass-panel p-4">
+                    <h3 class="text-xl font-semibold text-gray-300 text-center mb-4">Auxiliary Systems</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <button id="btn-flash" class="industrial-btn w-full h-16 bg-purple-600 text-white font-bold rounded-lg border-purple-400">Flashlight (F) 🔦</button>
+                        <button id="btn-zoom-in" class="industrial-btn w-full h-16 bg-green-600 text-white font-bold rounded-lg border-green-400">Zoom In ➕</button>
+                        <button id="btn-zoom-out" class="industrial-btn w-full h-16 bg-green-600 text-white font-bold rounded-lg border-green-400">Zoom Out ➖</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+    
+        const robotIp = "http://172.17.124.7"; 
+        const cameraIp = "http://172.17.124.185:8080";
+        const body = document.body;
+        const mainContainer = document.getElementById('main-container');
+        const layoutWrapper = document.getElementById('layout-wrapper');
+        const robotStatusDisplay = document.getElementById('robot-status');
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        const layoutToggleBtn = document.getElementById('layout-toggle');
+        
+        let controlMode = 'manual';
+        const btnModeManual = document.getElementById('btn-mode-manual');
+        const btnModeSemiAuto = document.getElementById('btn-mode-semi-auto');
+
+        let isFlashOn = false, currentZoomLevel = 1;
+
+        // --- NEW: Obstacle Detection State ---
+        let isObstacleDetected = false;
+
+        function updateStatus(text, color, duration = 3000) {
+            robotStatusDisplay.textContent = text;
+            const statusColor = body.classList.contains('light-theme') && color === 'white' ? '#1f2937' : color;
+            robotStatusDisplay.style.color = statusColor;
+            robotStatusDisplay.style.borderColor = statusColor;
+            
+            // A duration of 0 means the message is persistent and should not be cleared automatically.
+            if (duration > 0) {
+                setTimeout(() => {
+                    // Do not clear the status if a persistent obstacle message is active
+                    if (!isObstacleDetected) {
+                         robotStatusDisplay.textContent = "Ready";
+                         const readyColor = body.classList.contains('light-theme') ? '#374151' : 'white';
+                         robotStatusDisplay.style.color = readyColor;
+                         robotStatusDisplay.style.borderColor = 'gray';
+                    }
+                }, duration);
+            }
+        }
+
+        function clearActiveCommand() {
+            document.querySelectorAll('.movement-btn').forEach(btn => btn.classList.remove('active-command'));
+        }
+
+        // --- UPDATED: sendCommand function now blocks forward movement on obstacle detection ---
+        async function sendCommand(command, btnElement = null) {
+            // Block forward command if an obstacle is detected
+            if (command === 'forward' && isObstacleDetected) {
+                console.warn("Forward command blocked by obstacle.");
+                updateStatus("OBSTACLE: Forward blocked", '#f87171', 3000);
+                if (btnElement) {
+                    btnElement.classList.add('shake');
+                    setTimeout(() => btnElement.classList.remove('shake'), 500);
+                }
+                return; // Stop the function here
+            }
+
+            try {
+                if (btnElement && btnElement.classList.contains('movement-btn')) {
+                    clearActiveCommand();
+                    btnElement.classList.add('active-command');
+                } else if (command === 'stop') {
+                    clearActiveCommand();
+                }
+
+                const response = await fetch(`${robotIp}/${command}`);
+                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+                
+                const responseText = await response.text();
+                console.log(`Command '${command}' sent. Response: ${responseText}`);
+                
+                let statusText = responseText.split(': ')[1] || responseText;
+                let statusColor = '#6ee7b7';
+                if (responseText.includes("BLOCKED")) statusColor = '#f87171';
+                else if (command.includes('speed')) statusColor = '#67e8f9';
+                
+                // Don't overwrite the persistent obstacle message with a temporary success one
+                if (!isObstacleDetected) {
+                    updateStatus(statusText, statusColor);
+                }
+
+            } catch (error) {
+                console.error('Robot Command Error:', error);
+                updateStatus("ERROR: Robot Unreachable", '#f87171');
+                clearActiveCommand();
+            }
+        }
+
+        function setControlMode(newMode) {
+            controlMode = newMode;
+            if (newMode === 'manual') {
+                btnModeManual.classList.add('mode-active');
+                btnModeSemiAuto.classList.remove('mode-active');
+                updateStatus('Manual Mode Activated', 'white', 2000);
+
+            } else { // semi-auto
+                btnModeManual.classList.remove('mode-active');
+                btnModeSemiAuto.classList.add('mode-active');
+                updateStatus('Semi-Auto Mode Activated', 'white', 2000);
+            }
+            sendCommand('stop');
+        }
+
+        btnModeManual.addEventListener('click', () => setControlMode('manual'));
+        btnModeSemiAuto.addEventListener('click', () => setControlMode('semi-auto'));
+
+        document.querySelectorAll('.movement-btn').forEach(button => {
+            const command = button.dataset.command;
+            
+            const handlePress = (event) => {
+                event.preventDefault();
+                sendCommand(command, button);
+            };
+
+            const handleRelease = () => {
+                if (controlMode === 'manual') {
+                    sendCommand('stop');
+                }
+            };
+            
+            button.addEventListener('click', () => {
+                if (controlMode === 'semi-auto') {
+                    sendCommand(command, button);
+                }
+            });
+
+            button.addEventListener('mousedown', (e) => { if (controlMode === 'manual') handlePress(e); });
+            button.addEventListener('touchstart', (e) => { if (controlMode === 'manual') handlePress(e); });
+            
+            button.addEventListener('mouseup', handleRelease);
+            button.addEventListener('mouseleave', handleRelease);
+            button.addEventListener('touchend', handleRelease);
+        });
+
+        document.getElementById('btn-stop').addEventListener('click', () => sendCommand('stop'));
+
+        document.addEventListener('keydown', (event) => {
+            if (event.repeat) return;
+            let command = null, btnElement = null;
+            
+            switch (event.key.toLowerCase()) {
+                case 'w': case 'arrowup':    command = 'forward';  btnElement = document.getElementById('btn-forward'); break;
+                case 's': case 'arrowdown':  command = 'backward'; btnElement = document.getElementById('btn-backward'); break;
+                case 'a': case 'arrowleft':  command = 'left';     btnElement = document.getElementById('btn-left'); break;
+                case 'd': case 'arrowright': command = 'right';    btnElement = document.getElementById('btn-right'); break;
+                case ' ':                    sendCommand('stop', document.getElementById('btn-stop')); break;
+                case 'q':                    sendCommand('slowdown'); break;
+                case 'e':                    sendCommand('speedup'); break;
+                case 'f':                    toggleFlashlight(); break;
+                case '+': case '=':          zoom('in'); break;
+                case '-':                    zoom('out'); break;
+                case 'p':                    takePicture(); break;
+                case 'l':                    layoutToggleBtn.click(); break;
+                case 't':                    themeToggleBtn.click(); break;
+            }
+            if (command && btnElement) {
+                if (controlMode === 'semi-auto') {
+                    sendCommand(command, btnElement);
+                } else {
+                    sendCommand(command, btnElement);
+                }
+            }
+        });
+
+        document.addEventListener('keyup', (event) => {
+            const key = event.key.toLowerCase();
+            if (controlMode === 'manual' && ['w', 'arrowup', 's', 'arrowdown', 'a', 'arrowleft', 'd', 'arrowright'].includes(key)) {
+                sendCommand('stop');
+            }
+        });
+        
+        // --- NEW: Function to check for obstacles from the robot ---
+        async function fetchRobotStatus() {
+            try {
+                // IMPORTANT: You must create this endpoint on your robot's server.
+                // It should return JSON, e.g., {"obstacle": true} or {"obstacle": false}.
+                const response = await fetch(`${robotIp}/status`);
+                if (!response.ok) throw new Error(`Status check failed: ${response.status}`);
+
+                const statusData = await response.json();
+                const forwardBtn = document.getElementById('btn-forward');
+
+                if (statusData.obstacle === true) {
+                    if (!isObstacleDetected) { // Only trigger on first detection
+                        console.log("Obstacle DETECTED. Stopping robot and disabling forward movement.");
+                        isObstacleDetected = true;
+                        sendCommand('stop'); // Immediately stop the robot
+                        updateStatus("OBSTACLE DETECTED", '#f87171', 0); // Persistent warning
+                        forwardBtn.disabled = true;
+                        forwardBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                        forwardBtn.classList.remove('active-command');
+                    }
+                } else {
+                    if (isObstacleDetected) { // Only trigger when obstacle is cleared
+                        console.log("Obstacle CLEARED. Re-enabling forward movement.");
+                        isObstacleDetected = false;
+                        updateStatus("Ready", body.classList.contains('light-theme') ? '#374151' : 'white', 0);
+                        forwardBtn.disabled = false;
+                        forwardBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                    }
+                }
+            } catch (error) {
+                // This catches network errors. We log it but don't change the obstacle state
+                // for safety. If an obstacle was detected, it remains blocked until connection resumes.
+                console.warn("Could not fetch robot status. Last known state persists.", error);
+            }
+        }
+
+        const viewSideIcon = document.getElementById('view-side-icon');
+        const viewStackedIcon = document.getElementById('view-stacked-icon');
+        function applyLayout(layout) {
+            if (layout === 'side-by-side') {
+                mainContainer.classList.remove('max-w-5xl'); mainContainer.classList.add('max-w-7xl');
+                layoutWrapper.classList.add('lg:grid', 'lg:grid-cols-2', 'lg:gap-8');
+                viewSideIcon.style.display = 'none'; viewStackedIcon.style.display = 'block';
+                localStorage.setItem('layout', 'side-by-side');
+            } else {
+                mainContainer.classList.remove('max-w-7xl'); mainContainer.classList.add('max-w-5xl');
+                layoutWrapper.classList.remove('lg:grid', 'lg:grid-cols-2', 'lg:gap-8');
+                viewSideIcon.style.display = 'block'; viewStackedIcon.style.display = 'none';
+                localStorage.setItem('layout', 'stacked');
+            }
+        }
+
+        const moonIcon = document.getElementById('moon-icon');
+        const sunIcon = document.getElementById('sun-icon');
+        function applyTheme(theme) {
+            if (theme === 'light') {
+                body.classList.add('light-theme');
+                moonIcon.style.display = 'none'; sunIcon.style.display = 'block';
+            } else {
+                body.classList.remove('light-theme');
+                moonIcon.style.display = 'block'; sunIcon.style.display = 'none';
+            }
+        }
+
+        layoutToggleBtn.addEventListener('click', () => {
+            const newLayout = (localStorage.getItem('layout') || 'stacked') === 'stacked' ? 'side-by-side' : 'stacked';
+            applyLayout(newLayout);
+        });
+        
+        themeToggleBtn.addEventListener('click', () => {
+            const newTheme = body.classList.contains('light-theme') ? 'dark' : 'light';
+            applyTheme(newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+        
+        document.getElementById('btn-speedup').addEventListener('click', () => sendCommand('speedup'));
+        document.getElementById('btn-slowdown').addEventListener('click', () => sendCommand('slowdown'));
+        document.getElementById('btn-flash').addEventListener('click', toggleFlashlight);
+        document.getElementById('btn-zoom-in').addEventListener('click', () => zoom('in'));
+        document.getElementById('btn-zoom-out').addEventListener('click', () => zoom('out'));
+        document.getElementById('btn-picture').addEventListener('click', takePicture);
+
+        function toggleFlashlight() {
+            const endpoint = isFlashOn ? '/disabletorch' : '/enabletorch';
+            fetch(`${cameraIp}${endpoint}`)
+                .then(r => { if (!r.ok) throw new Error('HTTP Error'); isFlashOn = !isFlashOn; updateStatus(`Flashlight: ${isFlashOn ? 'ON' : 'OFF'}`, '#facc15'); })
+                .catch(err => { console.error(err); updateStatus("Flashlight Error", '#f87171'); });
+        }
+        function zoom(direction) {
+            const step = 1, max = 10, min = 1;
+            if (direction === 'in') currentZoomLevel = Math.min(currentZoomLevel + step, max);
+            else currentZoomLevel = Math.max(currentZoomLevel - step, min);
+            fetch(`${cameraIp}/ptz?zoom=${currentZoomLevel}`)
+                .then(r => { if (!r.ok) throw new Error('HTTP Error'); updateStatus(`Zoom: x${currentZoomLevel}`, '#facc15'); })
+                .catch(err => { console.error(err); updateStatus("Zoom Error", '#f87171'); });
+        }
+        async function takePicture() {
+            updateStatus("Capturing...", 'orange');
+            try {
+                const r = await fetch(`${cameraIp}/shot.jpg`);
+                if (!r.ok) throw new Error('HTTP Error');
+                const blob = await r.blob();
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `snapshot_${new Date().toISOString()}.jpg`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                updateStatus("Picture Saved!", '#6ee7b7');
+            } catch (error) {
+                console.error('Picture Error:', error);
+                updateStatus("Picture Error", '#f87171');
+            }
+        }
+
+        // Initialize page state
+        applyTheme(localStorage.getItem('theme') || 'dark');
+        applyLayout(localStorage.getItem('layout') || 'stacked');
+        setControlMode('manual');
+        
+        // --- NEW: Start polling for robot status ---
+        setInterval(fetchRobotStatus, 500); // Check for obstacles every 500ms
+    });
+    </script>
+</body>
+</html>
