@@ -120,7 +120,7 @@
         <div id="layout-wrapper" class="w-full">
             <div id="media-column" class="space-y-6 w-full">
                 <div class="relative w-full aspect-video bg-black/50 rounded-lg overflow-hidden border border-white/10">
-                    <img id="video-feed" src="http://172.17.124.185:8080/video" class="w-full h-full object-contain" alt="Live Video Feed" onerror="this.onerror=null;this.src='https://placehold.co/1280x720/1f2937/9ca3af?text=Video+Feed+Unavailable';">
+                    <img id="video-feed" src="http://10.250.105.196:8080/video" class="w-full h-full object-contain" alt="Live Video Feed" onerror="this.onerror=null;this.src='https://placehold.co/1280x720/1f2937/9ca3af?text=Video+Feed+Unavailable';">
                     <div id="robot-status" class="absolute bottom-2 left-1/2 -translate-x-1/2 bg-black/70 px-4 py-1.5 rounded-md text-sm font-mono text-white border border-gray-500 transition-all shadow-lg">
                         Ready
                     </div>
@@ -141,7 +141,7 @@
                         <svg class="w-6 h-6 text-green-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M18.75 12a.75.75 0 0 0-.75.75v2.25a3 3 0 0 1-3 3h-1.5a.75.75 0 0 0 0 1.5h1.5a4.5 4.5 0 0 0 4.5-4.5v-2.25a.75.75 0 0 0-.75-.75ZM12 18.75a.75.75 0 0 0 .75-.75v-1.5a3 3 0 0 1 3-3h2.25a.75.75 0 0 0 0-1.5H15a4.5 4.5 0 0 0-4.5 4.5v1.5a.75.75 0 0 0 .75.75ZM12 5.25a.75.75 0 0 0-.75.75v1.5a3 3 0 0 1-3 3H6.75a.75.75 0 0 0 0 1.5h2.25a4.5 4.5 0 0 0 4.5-4.5v-1.5a.75.75 0 0 0-.75-.75ZM5.25 12a.75.75 0 0 0-.75.75v2.25a4.5 4.5 0 0 0 4.5 4.5h1.5a.75.75 0 0 0 0-1.5H9a3 3 0 0 1-3-3v-2.25a.75.75 0 0 0-.75-.75Z" /></svg>
                         Live Audio
                     </h3>
-                    <audio id="audio-player" controls autoplay src="http://172.17.124.185:8080/audio.opus"></audio>
+                    <audio id="audio-player" controls autoplay src="http://10.250.105.196:8080/audio.opus"></audio>
                 </div>
             </div>
 
@@ -179,8 +179,8 @@
     <script>
     document.addEventListener('DOMContentLoaded', () => {
     
-        const robotIp = "http://172.17.124.7"; 
-        const cameraIp = "http://172.17.124.185:8080";
+        const robotIp = "http://10.250.105.7"; 
+        const cameraIp = "http://10.250.105.196:8080";
         const body = document.body;
         const mainContainer = document.getElementById('main-container');
         const layoutWrapper = document.getElementById('layout-wrapper');
