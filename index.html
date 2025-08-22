@@ -194,7 +194,7 @@
 
         let isFlashOn = false, currentZoomLevel = 1;
 
-        // --- NEW: Obstacle Detection State ---
+        //Obstacle Detection State ---
         let isObstacleDetected = false;
 
         function updateStatus(text, color, duration = 3000) {
@@ -203,7 +203,7 @@
             robotStatusDisplay.style.color = statusColor;
             robotStatusDisplay.style.borderColor = statusColor;
             
-            // A duration of 0 means the message is persistent and should not be cleared automatically.
+            //the message is persistent and should not be cleared automatically.
             if (duration > 0) {
                 setTimeout(() => {
                     // Do not clear the status if a persistent obstacle message is active
